@@ -1203,12 +1203,15 @@ void ExportData() {
 	fclose(fWrite);
 }
 
-void SetAmount(int value_1) {
+void SetAmount(int value_1, int value_2) {
 	char *buffer = (char*)malloc(100);
-	sprintf(buffer, "Bedrag: € %c%i.%02u", 
+	sprintf(buffer, "Saldo: € %c%i.%02u, vorig saldo: € %c%i.%02u", 
 		value_1 < 0 ? '-' : ' ',
 		value_1 == 0 ? 0 : ((value_1 < 0 ? value_1 * -1 : value_1) / 100),
-		value_1 == 0 ? 0 : ((value_1 < 0 ? value_1 * -1 : value_1) % 100)
+		value_1 == 0 ? 0 : ((value_1 < 0 ? value_1 * -1 : value_1) % 100),
+		value_2 < 0 ? '-' : ' ',
+		value_2 == 0 ? 0 : ((value_2 < 0 ? value_2 * -1 : value_2) / 100),
+		value_2 == 0 ? 0 : ((value_2 < 0 ? value_2 * -1 : value_2) % 100)
 	);
 	SendMessage(hValue, WM_SETTEXT, 0, (LPARAM)buffer);
 	free(buffer);
@@ -1317,7 +1320,7 @@ void AnalyseData(unsigned char* buffer, int size) {
 		j ^= 0x7FFF;
 		j = j * -1;
 	}
-	SetAmount(iIDb3 > iIDa3 ? j : i);
+	SetAmount(iIDb3 > iIDa3 ? j : i, iIDb3 > iIDa3 ? i : j);
 	
 	//Get expiration date
 	bPoint = buffer + 0x010;
@@ -1367,6 +1370,9 @@ void AnalyseData(unsigned char* buffer, int size) {
 
 	for (i = 0; i < 8; i++)
 		ListView_SetColumnWidth(hSubscriptions, i, -2);
+
+	//Fix the disappearing listview bug
+	InvalidateRect(hMain,NULL,true);
 }
 
 //! Load in a dump from a file, NOTE set the filename to szFileName
